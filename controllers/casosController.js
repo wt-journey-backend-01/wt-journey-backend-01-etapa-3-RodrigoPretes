@@ -64,7 +64,7 @@ async function buildCase(data, method){
 
 function validateID(id) {
     const idNumber = Number(id);
-    if (isNaN(idNumber)) {
+    if (isNaN(idNumber) || !Number.isInteger(idNumber) || idNumber <= 0) {
         return createError(400, "ID inválido, deve ser número.");
     }
 }
@@ -130,7 +130,7 @@ async function updateCaseById(req, res){
 		return res.status(error.status).json(error);
 	}
 	const updatedCase = await casosRepository.updateCaseById(req.params.id, validCaseData.payload);
-	return res.status(updatedCase.status).json(updatedCase);
+	return res.status(updatedCase.status).send();
 }
 
 async function patchCaseByID(req, res) {
@@ -144,7 +144,7 @@ async function patchCaseByID(req, res) {
 		return res.status(error.status).json(error);
 	}
 	const patchedCase = await casosRepository.patchCaseByID(req.params.id, validCaseData.payload);
-	return res.status(patchedCase.status).json(patchedCase);
+	return res.status(patchedCase.status).send();
 }
 
 async function deleteCaseById(req, res) {

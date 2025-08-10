@@ -52,7 +52,7 @@ function buildAgent(data, method) {
 
 function validateID(id) {
     const idNumber = Number(id);
-    if (isNaN(idNumber)) {
+    if (isNaN(idNumber) || !Number.isInteger(idNumber) || idNumber <= 0) {
         return createError(400, "ID inválido, deve ser número.");
     }
 }
@@ -122,7 +122,7 @@ async function updateAgenteById(req, res) {
         return res.status(error.status).json(error);
     }
     const result = await agentesRepository.updateAgentById(req.params.id, buildedAgent.payload);
-    res.status(result.status).json(result);
+    res.status(result.status).send();
 }
 
 async function patchAgenteByID(req, res) {
@@ -136,7 +136,7 @@ async function patchAgenteByID(req, res) {
         return res.status(error.status).json(error);
     }
     const result = await agentesRepository.patchAgentByID(req.params.id, validAgentPatch.payload);
-    res.status(result.status).json(result);
+    res.status(result.status).send();
 }
 
 async function deleteAgenteById(req, res) {

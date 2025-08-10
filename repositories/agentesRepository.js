@@ -47,7 +47,7 @@ async function findAllAgentCases(agentID) {
                             .where('c.agente_id', agentID);
 
         if(!agente.length){ 
-            return createError(404, `Não foi encontrado nenhum agente com o id: ${agentID}, na nossa base de dados.`);
+            return createError(404, `Não foi encontrado nenhum caso pertecente ao agente com o id: ${agentID}, na nossa base de dados.`);
         };
         
         return {
@@ -98,11 +98,11 @@ async function sortByIncorporation(sortParam) {
 
 async function insertAgent(newAgent) {
     try{
-        await db.insert(newAgent).into('agentes');
+        const agentInsertedID = await db.insert(newAgent).into('agentes').returning('id');
         
         return {
             status: 201,
-            data: [newAgent],
+            data: agentInsertedID,
             msg: "Agente inserido com sucesso",
         };
     }catch(e){
@@ -128,8 +128,8 @@ async function updateAgentById(agentID, agentToBeUpdated) {
         }
 
         return {
-            status: 200, 
-            data: updatedAgent,
+            status: 204, 
+            data: null,
             msg: "Agente atualizado com sucesso!"
         }
 
@@ -157,8 +157,8 @@ async function patchAgentByID(agentID, req) {
         }
 
         return {
-            status: 200, 
-            data: patchedAgent,
+            status: 204, 
+            data: null,
             msg: "Agente atualizado com sucesso!"
         }
 
