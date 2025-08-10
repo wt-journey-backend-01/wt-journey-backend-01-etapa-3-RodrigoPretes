@@ -27,7 +27,7 @@ const casosController = require('../controllers/casosController');
  *         name: agente_id
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *         required: false
  *         description: Filtra os casos por agente responsável
  *     responses:
@@ -49,7 +49,7 @@ const casosController = require('../controllers/casosController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *         description: ID do caso
  *     responses:
  *       200:
@@ -85,7 +85,7 @@ const casosController = require('../controllers/casosController');
  *                 enum: [aberto, solucionado]
  *               agente_id:
  *                 type: string
- *                 format: uuid
+ *                 format: id
  *     responses:
  *       201:
  *         description: Caso criado com sucesso
@@ -105,7 +105,7 @@ const casosController = require('../controllers/casosController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *     requestBody:
  *       required: true
  *       content:

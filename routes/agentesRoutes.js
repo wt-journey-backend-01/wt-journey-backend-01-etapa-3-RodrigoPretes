@@ -46,13 +46,77 @@ const agentesController = require('../controllers/agentesController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *         description: ID do agente
  *     responses:
  *       200:
  *         description: Agente encontrado
  *       404:
  *         description: Agente não encontrado
+ */
+
+/**
+ * @swagger
+ * /agentes/{id}/casos:
+ *   get:
+ *     summary: Retorna todos os casos do agente informado
+ *     description: Lista os casos associados ao agente via `agente_id`.
+ *     tags: [Agentes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: ID do agente
+ *     responses:
+ *       200:
+ *         description: Lista de casos do agente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseCases'
+ *             examples:
+ *               sucesso:
+ *                 value:
+ *                   status: 200
+ *                   msg: "Casos do agente retornados com sucesso."
+ *                   data:
+ *                     - id: 10
+ *                       titulo: "Roubo ao mercado"
+ *                       descricao: "Ocorrido no bairro Centro às 21h."
+ *                       status: "aberto"
+ *                       agente_id: 1
+ *                     - id: 11
+ *                       titulo: "Fraude bancária"
+ *                       descricao: "Transações suspeitas em conta PJ."
+ *                       status: "solucionado"
+ *                       agente_id: 1
+ *       404:
+ *         description: Agente não encontrado ou sem casos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseCases'
+ *             examples:
+ *               naoEncontrado:
+ *                 value:
+ *                   status: 404
+ *                   msg: "Agente de id 8 não foi encontrado na nossa base de dados."
+ *                   data: null
+ *       400:
+ *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             examples:
+ *               idInvalido:
+ *                 value:
+ *                   status: 400
+ *                   msg: "ID inválido, deve ser número inteiro positivo."
+ *                   data: null
  */
 
 /**
@@ -99,7 +163,7 @@ const agentesController = require('../controllers/agentesController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *     requestBody:
  *       required: true
  *       content:
@@ -136,7 +200,7 @@ const agentesController = require('../controllers/agentesController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *     requestBody:
  *       required: true
  *       content:
@@ -169,7 +233,7 @@ const agentesController = require('../controllers/agentesController');
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *           format: id
  *     responses:
  *       200:
  *         description: Agente deletado com sucesso
@@ -179,6 +243,7 @@ const agentesController = require('../controllers/agentesController');
 
 router.get('/agentes', agentesController.getAllAgentes);
 router.get('/agentes/:id', agentesController.getAgenteByID);
+router.get('/agentes/:id/casos', agentesController.getAllAgentCases);
 router.post('/agentes', agentesController.insertAgente);
 router.put('/agentes/:id', agentesController.updateAgenteById);
 router.patch('/agentes/:id', agentesController.patchAgenteByID);
