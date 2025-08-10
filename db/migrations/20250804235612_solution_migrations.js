@@ -30,7 +30,6 @@ exports.up = async function(knex) {
         .notNullable()
         .references('id')
         .inTable('agentes')
-        .onDelete('CASCADE')
         .onDelete('CASCADE');
 
     table.index(['agente_id']);

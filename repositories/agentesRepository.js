@@ -8,7 +8,7 @@ async function findAllAgents() {
         const agentes = await db.select().from('agentes');
 
         if(!agentes.length){
-            createError(404, 'Não foram encontrados agentes na base de dados.');
+            return createError(404, 'Não foram encontrados agentes na base de dados.');
         }
     
         return {
@@ -83,7 +83,7 @@ async function sortByIncorporation(sortParam) {
         const sorted = await db.select('*').from('agentes').orderBy("dataDeIncorporacao", sortParam === "dataDeIncorporacao" ? 'asc' : 'desc');
 
         if(!sorted.length){
-            createError(404, "Não foram encontrados nenhum agente, não sendo possível fazer sua ordenação.");
+            return createError(404, "Não foram encontrados nenhum agente, não sendo possível fazer sua ordenação.");
         }
         
         return {
@@ -124,7 +124,7 @@ async function updateAgentById(agentID, agentToBeUpdated) {
                                 .returning(['id', 'nome', 'dataDeIncorporacao', 'cargo']);
 
         if(!updatedAgent.length){
-            createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
+            return createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
         }
 
         return {
@@ -134,7 +134,7 @@ async function updateAgentById(agentID, agentToBeUpdated) {
         }
 
     }catch(e){
-        createError(400, `Erro ao atualizar agente.`)
+        return createError(400, `Erro ao atualizar agente.`)
     }
 }
 
@@ -153,7 +153,7 @@ async function patchAgentByID(agentID, req) {
             .returning(['id', 'nome', 'dataDeIncorporacao', 'cargo']);
         
         if(!patchedAgent.length){
-            createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
+           return createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
         }
 
         return {
@@ -163,7 +163,7 @@ async function patchAgentByID(agentID, req) {
         }
 
     }catch(e){
-        createError(400, `Erro ao atualizar agente.`)
+        return createError(400, `Erro ao atualizar agente.`)
     }
 }
 
@@ -190,7 +190,7 @@ async function deleteAgentById(agentID) {
         };
     }
     catch(e){
-        createError(400, `Erro ao excluir agente.`);
+        return createError(400, `Erro ao excluir agente.`);
     }
 }
 
