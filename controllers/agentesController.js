@@ -55,6 +55,7 @@ function validateID(id) {
     if (isNaN(idNumber) || !Number.isInteger(idNumber) || idNumber <= 0) {
         return createError(400, "ID inválido, deve ser número.");
     }
+    return null;
 }
 
 async function getAllAgentes(req, res) {

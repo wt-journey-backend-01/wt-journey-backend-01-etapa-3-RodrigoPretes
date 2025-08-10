@@ -102,7 +102,7 @@ async function insertAgent(newAgent) {
         
         return {
             status: 201,
-            data: agentInsertedID,
+            data: agentInsertedID[0],
             msg: "Agente inserido com sucesso",
         };
     }catch(e){

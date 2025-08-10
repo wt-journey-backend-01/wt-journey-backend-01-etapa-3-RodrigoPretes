@@ -83,7 +83,7 @@ async function insertCase(newCase){
         const caseInsertedID = await db.insert(newCase).into('casos').returning('id');
         return {
             status: 201,
-            data: caseInsertedID,
+            data: caseInsertedID[0],
             msg: "Caso inserido com sucesso"
         };
     }catch(e){

@@ -7,12 +7,11 @@
 ## 2. Configuração do Ambiente
 
 1. Crie um arquivo `.env` na raiz do projeto com as variáveis abaixo.
-2. Substitua `seu_usuario`, `sua_senha` e `seu_banco` pelos valores do seu ambiente.
 
 ```env
-POSTGRES_USER=seu_usuario
-POSTGRES_PASSWORD=sua_senha
-POSTGRES_DB=seu_banco
+POSTGRES_DB=policia_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 NODE_ENV=development
 ```
 
