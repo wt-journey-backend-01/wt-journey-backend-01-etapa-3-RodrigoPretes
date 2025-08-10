@@ -80,10 +80,10 @@ async function getCaseByID(id) {
 
 async function insertCase(newCase){
     try{    
-        await db.insert(newCase).into('casos');
+        const caseInsertedID = await db.insert(newCase).into('casos').returning('id');
         return {
             status: 201,
-            data: [newCase],
+            data: caseInsertedID,
             msg: "Caso inserido com sucesso"
         };
     }catch(e){
@@ -109,8 +109,8 @@ async function updateCaseById(caseID, caseToBeUpdated){
         }
 
         return {
-            status: 200,
-            data: updatedCase,
+            status: 204,
+            data: null,
             msg: "Caso atualizado com sucesso."
         }
 
@@ -139,13 +139,13 @@ async function patchCaseByID(caseID, caseToBePatched){
         }
 
         return {
-            status: 200, 
-            data: patchedAgent,
+            status: 204, 
+            data: null,
             msg: "Caso atualizado com sucesso!"
         }
 
     }catch(e){
-        return (400, `Erro ao atualizar caso.`)
+        return createError(400, `Erro ao atualizar caso.`)
     }
 }
 

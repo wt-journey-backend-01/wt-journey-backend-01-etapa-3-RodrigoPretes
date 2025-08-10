@@ -1,100 +1,60 @@
-## Etapa 3 — Persistência de Dados com PostgreSQL e Knex.js
+# Instruções para Execução do Projeto
 
-Nesta etapa, a API de gerenciamento de agentes e casos policiais passa a armazenar os dados em um banco PostgreSQL usando **Knex.js**, **migrations** e **seeds**.
+## 1. Pré-requisitos
 
----
+-   Certifique-se de que o **Docker** está instalado em sua máquina.
 
-## 1) Pré-requisitos
+## 2. Configuração do Ambiente
 
-- Node.js (>= 18)
-- npm ou yarn
-- Docker e Docker Compose
-- Porta **5432** livre (ou ajuste no `docker-compose.yml`)
-
----
-
-## 2) Configurar Variáveis de Ambiente
-
-Na raiz do projeto, crie um arquivo `.env` com:
+1. Crie um arquivo `.env` na raiz do projeto com as variáveis abaixo.
+2. Substitua `seu_usuario`, `sua_senha` e `seu_banco` pelos valores do seu ambiente.
 
 ```env
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=policia_db
-````
-
-⚠️ **Não altere esses valores**
-
----
-
-## 3) Subir o Banco de Dados com Docker
-
-Verifique a existência do arquivo `docker-compose.yml`:
-
-```yaml
-version: "3.9"
-
-services:
-  postgres:
-    image: postgres:16
-    container_name: policia_db_pg
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+POSTGRES_USER=seu_usuario
+POSTGRES_PASSWORD=sua_senha
+POSTGRES_DB=seu_banco
+NODE_ENV=development
 ```
 
-Suba o banco:
+## 3. Inicializando o Docker
 
-```bash
-docker compose up -d
-docker compose logs -f postgres
-```
----
+-   No terminal, execute para subir o container:
 
-## 4)Executar Migrations
+    ```bash
+    docker compose up -d
+    ```
 
+-   Para verificar se o container está rodando:
 
-Aplicar migrations:
+    ```bash
+    docker ps
+    ```
 
-```bash
-npx knex migrate:latest
-```
+## 4. Executando Migrations
 
-Refazer do zero (dev):
+-   As migrations criam as tabelas do banco de dados. Execute:
 
-```bash
-npx knex migrate:rollback --all
-npx knex migrate:latest
-```
+    ```bash
+    npx knex migrate:latest
+    ```
 
----
+## 5. Executando Seeds
 
-## 5) Executar Seeds
+-   As seeds populam o banco de dados para facilitar o desenvolvimento e testes.
+-   Execute o comando:
 
+    ```bash
+    npx knex seed:run --specific=agentes.js
+    npx knex seed:run --specific=casos.js
+    ```
 
-```bash
-npx knex seed:run
-```
+-   Após a execução, o banco estará populado.
 
----
+## 6. Resetando o Banco (Script Extra)
 
-## 6) Troubleshooting
+-   O projeto possui um script que derruba o container, cria novamente, executa as migrations e popula o banco com as seeds.
+-   Para utilizá-lo, execute:
 
-* **Conexão recusada**:
-  Verifique se o container está rodando (`docker compose ps`) e a porta **5432** está livre.
-* **Migration não atualiza**:
-  Use `npx knex migrate:rollback --all` antes de rodar novamente.
-* **Erro de FK em seeds**:
-  Certifique-se de executar os seeds de `agentes` antes de `casos`.
-
----
-
+    ```bash
+    npm run db:reset
+    ```
