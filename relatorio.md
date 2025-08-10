@@ -1,293 +1,283 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 3 créditos restantes para usar o sistema de feedback AI.
+Você tem 2 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para RodrigoPretes:
 
-Nota final: **0.0/100**
+Nota final: **42.4/100**
 
 # Feedback para RodrigoPretes 🚓✨
 
-Olá, Rodrigo! Primeiro, quero parabenizá-lo pelo esforço e pela organização inicial do seu projeto. Você estruturou seu código em módulos (controllers, repositories, routes), usou Knex.js para a conexão com o banco e até cuidou das validações e tratamento de erros, o que é super importante para uma API robusta. Além disso, vi que você até implementou filtros e ordenações, algo que vai além do básico, e isso merece um 👏! 
-
-Agora, vamos juntos destrinchar seu código para entender onde podemos melhorar para que tudo funcione perfeitamente. Vou te mostrar os pontos principais que encontrei, explicando o que pode estar causando os problemas e como você pode corrigir. Bora?
+Olá, Rodrigo! Antes de mais nada, parabéns pelo empenho em migrar sua API para usar PostgreSQL com Knex.js! 🎉 Isso já é um grande passo rumo a uma aplicação mais robusta e escalável. Também notei que você conseguiu implementar várias validações e tratamentos de erro personalizados, o que é um diferencial muito importante para APIs profissionais. 👏
 
 ---
 
-## 1. Estrutura do Projeto 🗂️
+## O que está indo muito bem 👌
 
-Sua estrutura está praticamente correta e segue o padrão esperado, o que é ótimo para manter o código organizado e escalável! Você tem:
+- **Estrutura modular**: Você manteve a separação clara entre controllers, repositories e rotas, o que facilita muito a manutenção e evolução do projeto.
+- **Validações detalhadas**: Os métodos `buildAgent` e `buildCase` fazem uma boa checagem dos dados recebidos, garantindo que o payload esteja no formato esperado.
+- **Tratamento de erros customizados**: Você criou mensagens claras para erros 400 e 404, o que melhora a experiência do consumidor da API.
+- **Seeds e Migrations**: Você criou migrations para as tabelas `agentes` e `casos` e seeds que populam as tabelas com dados iniciais, respeitando a ordem para evitar erros de chave estrangeira.
+- **Swagger bem documentado**: A documentação das rotas está bem feita, o que é ótimo para equipes e para testes futuros.
+- **Configuração do banco e Knex**: Seu `knexfile.js` está configurado para ambientes `development` e `ci`, e o arquivo `db/db.js` usa corretamente essa configuração para instanciar o Knex.
+
+Além disso, você implementou alguns filtros e ordenações que são extras, mostrando que está pensando além do básico. Isso é ótimo! 🚀
+
+---
+
+## Agora, vamos falar sobre os pontos que precisam de atenção para destravar sua API e fazer tudo funcionar perfeitamente! 🕵️‍♂️🔍
+
+### 1. Estrutura de Diretórios e Organização do Projeto
+
+Sua estrutura geral está muito próxima do esperado, mas notei uma pequena divergência no nome do container do PostgreSQL no `docker-compose.yml`:
+
+```yaml
+services:
+  postgres:
+    container_name: pg-app
+```
+
+Enquanto no `INSTRUCTIONS.md` o container esperado é `policia_db_pg`. Isso não é um erro grave, mas pode causar confusão se você seguir instruções que esperam o nome original. Recomendo alinhar para evitar problemas futuros.
+
+Além disso, a estrutura geral está assim:
 
 ```
-├── controllers/
-├── repositories/
-├── routes/
+.
 ├── db/
 │   ├── migrations/
 │   ├── seeds/
 │   └── db.js
-├── utils/
-├── knexfile.js
-├── server.js
+├── routes/
+├── controllers/
+├── repositories/
+└── utils/
 ```
 
-Isso está ótimo!
-
-**Apenas um ponto para ficar atento:** Você tem um arquivo `.env` na raiz do projeto, e isso gerou uma penalidade. Geralmente, o arquivo `.env` não deve ser enviado ao repositório público por conter dados sensíveis. Para evitar isso, você pode incluir o `.env` no seu `.gitignore`. Assim, mantém suas variáveis de ambiente seguras e evita penalidades.
+Está tudo no lugar! Parabéns pela organização! 🎯
 
 ---
 
-## 2. Configuração da Conexão com o Banco de Dados 🛢️
+### 2. Conexão com o Banco de Dados e Configuração do Knex
 
-### O que observei:
+Você configurou o `knexfile.js` corretamente para pegar as variáveis do `.env`:
 
-- Seu `knexfile.js` está configurado para usar as variáveis de ambiente para o usuário, senha e banco, o que é ótimo.
-- O arquivo `db/db.js` importa o `knexfile.js` e cria a conexão usando o ambiente `development`.
-- O `docker-compose.yml` está presente, mas notei que o container está configurado para usar um usuário e banco diferentes do que está no `.env` e no `knexfile.js`.
-
-**Detalhe importante no `docker-compose.yml`:**
-
-```yaml
-healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+```js
+connection: {
+  host: '127.0.0.1',
+  port: 5432,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB,
+},
 ```
 
-Aqui, o healthcheck tenta conectar com o usuário `appuser` e banco `appdb`, mas no `.env` e no `knexfile.js` você usa `postgres` como usuário e `policia_db` como banco.
+E no `db/db.js`:
 
-Isso pode causar um problema de conexão porque o container pode não estar pronto para aceitar conexões com o usuário/banco que você configurou no Knex.
-
-### Como corrigir:
-
-No `docker-compose.yml`, alinhe as variáveis de ambiente e o healthcheck para usar as mesmas credenciais do `.env`:
-
-```yaml
-environment:
-  POSTGRES_DB: ${POSTGRES_DB}
-  POSTGRES_USER: ${POSTGRES_USER}
-  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+```js
+const nodeEnv = process.env.NODE_ENV || 'development';
+const config = knexConfig[nodeEnv]; 
+const db = knex(config);
 ```
 
-Ou substitua diretamente:
+Isso está ótimo! Porém, é fundamental garantir que seu arquivo `.env` esteja presente na raiz do projeto e com as variáveis exatamente como no `INSTRUCTIONS.md`:
 
-```yaml
-healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U postgres -d policia_db"]
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=policia_db
 ```
 
-Assim, o container vai reportar corretamente quando estiver pronto, evitando problemas de conexão.
+Sem isso, a conexão não vai funcionar e suas queries não vão rodar, o que pode ser a raiz dos problemas que você está enfrentando.
+
+**Recomendo fortemente que você confira se o container do PostgreSQL está rodando e saudável** com:
+
+```bash
+docker compose ps
+docker compose logs -f postgres
+```
+
+Se o banco não estiver ativo ou as variáveis de ambiente estiverem erradas, suas consultas via Knex vão falhar silenciosamente ou retornar erros difíceis de rastrear.
+
+Para entender melhor como configurar o banco com Docker e Knex, veja este vídeo super didático:  
+[Configuração de Banco de Dados com Docker e Knex](http://googleusercontent.com/youtube.com/docker-postgresql-node)
 
 ---
 
-## 3. Migrations: Definição das Tabelas
+### 3. Migrations e Seeds — A Base do Seu Banco
 
-No arquivo `db/migrations/20250804235612_solution_migrations.js`, encontrei um detalhe que pode estar quebrando a criação da tabela `casos`:
-
-```js
-table.integer('agente_id')
-    .notNullable()
-    .references('id')
-    .inTable('agentes')
-    .onDelete('CASCADE')
-    .onDelete('CASCADE');
-```
-
-Você está chamando `.onDelete('CASCADE')` duas vezes seguidas na mesma coluna. Isso é um erro e pode causar falha na migration.
-
-### Como corrigir:
-
-Deixe apenas uma chamada `.onDelete('CASCADE')`:
+Seu arquivo de migration está bem feito, com as tabelas `agentes` e `casos` criadas com os campos corretos e a FK devidamente configurada:
 
 ```js
-table.integer('agente_id')
-    .notNullable()
-    .references('id')
-    .inTable('agentes')
-    .onDelete('CASCADE');
+await knex.schema.createTable('agentes', (table) => {
+  table.increments('id').primary();
+  table.string('nome').notNullable();
+  table.date('dataDeIncorporacao').notNullable();
+  table.string('cargo').notNullable();
+});
+
+await knex.schema.createTable('casos', (table) => {
+  table.increments('id').primary();
+  table.string('titulo').notNullable();
+  table.text('descricao').notNullable();
+  table.enu('status', ['aberto', 'solucionado']).notNullable().defaultTo('aberto');
+  table.integer('agente_id').notNullable()
+    .references('id').inTable('agentes').onDelete('CASCADE');
+  table.index(['agente_id']);
+});
 ```
 
-Esse detalhe é fundamental para que as migrations rodem sem erros e as tabelas sejam criadas corretamente.
+No entanto, para garantir que as migrations estejam aplicadas corretamente, **sempre rode**:
+
+```bash
+npx knex migrate:rollback --all
+npx knex migrate:latest
+```
+
+E para popular os dados:
+
+```bash
+npx knex seed:run
+```
+
+Se você não rodar as migrations ou seeds corretamente, as tabelas podem estar vazias ou inexistentes, causando falhas em todas as operações CRUD.
+
+Para aprofundar o entendimento sobre migrations e seeds, recomendo:  
+- [Documentação oficial do Knex sobre migrations](https://knexjs.org/guide/migrations.html)  
+- [Vídeo sobre seeds com Knex](http://googleusercontent.com/youtube.com/knex-seeds)
 
 ---
 
-## 4. Seeds: Inserção dos Dados Iniciais
+### 4. Consultas no Repositório — Potenciais Pontos de Falha
 
-Se as migrations não rodarem, os seeds também vão falhar porque as tabelas não existem. Então, o primeiro passo é garantir que as migrations estejam funcionando.
+Nos seus repositories, as queries estão muito bem escritas, mas notei alguns detalhes que podem causar problemas:
 
-Além disso, no seed dos casos, você busca os agentes para pegar os IDs:
+- **Retorno de arrays nos métodos `getAgentByID` e `getCaseByID`:**
 
 ```js
-const agentes = await knex('agentes').select('id').orderBy('id', 'asc');
+const agente = await db.select().from('agentes').where('agentes.id', id);
+
+if(!agente.length){ 
+    return createError(404, `Não foi encontrado nenhum agente com o id: ${id}, na nossa base de dados.`);
+};
+
+return {
+    status: 200,
+    data: agente,
+    msg: "Agente encontrado com sucesso",
+};
 ```
 
-Se a tabela `agentes` estiver vazia ou as migrations não rodaram, esse array estará vazio e a inserção dos casos falhará.
+Aqui, `agente` é um array (mesmo que com 1 elemento). O ideal é retornar o objeto diretamente para evitar confusão no controller e no cliente:
+
+```js
+return {
+    status: 200,
+    data: agente[0], // retorna o primeiro objeto diretamente
+    msg: "Agente encontrado com sucesso",
+};
+```
+
+O mesmo vale para `getCaseByID` e outros métodos similares.
+
+- **Na função `findAllAgentCases` você retorna erro 404 se não encontrar casos, mas a mensagem diz que o agente não foi encontrado, o que pode confundir:**
+
+```js
+if(!agente.length){ 
+    return createError(404, `Não foi encontrado nenhum agente com o id: ${agentID}, na nossa base de dados.`);
+};
+```
+
+Porém, essa query retorna casos, não agentes. Seria melhor consultar primeiro se o agente existe e depois buscar os casos, ou ajustar a mensagem para refletir que não há casos para o agente.
 
 ---
 
-## 5. Repositories: Tratamento de Erros e Retorno
+### 5. Validação de IDs — Um Detalhe Importante
 
-Notei que em vários métodos do seu repository, você cria erros com `createError()` mas não retorna eles explicitamente. Por exemplo, no `findAllAgents()`:
+Nas funções `validateID` dos controllers, você retorna um erro caso o ID não seja número, mas não está verificando se o número é inteiro positivo, o que pode permitir IDs inválidos como `0`, `-1` ou números decimais.
+
+Recomendo melhorar essa validação:
 
 ```js
-if(!agentes.length){
-    createError(404, 'Não foram encontrados agentes na base de dados.');
+function validateID(id) {
+    const idNumber = Number(id);
+    if (isNaN(idNumber) || !Number.isInteger(idNumber) || idNumber <= 0) {
+        return createError(400, "ID inválido, deve ser número inteiro positivo.");
+    }
 }
 ```
 
-Aqui, você chama `createError` mas não faz `return` ou `throw`. Isso significa que o código continua e retorna o objeto com status 200 e dados vazios, o que não é o esperado.
-
-### Como corrigir:
-
-Você deve retornar o erro para que o controller possa enviar o status correto:
-
-```js
-if(!agentes.length){
-    return createError(404, 'Não foram encontrados agentes na base de dados.');
-}
-```
-
-Esse padrão deve ser seguido em todos os lugares onde você chama `createError`.
+Isso ajuda a evitar requisições com parâmetros inválidos que podem quebrar suas queries.
 
 ---
 
-## 6. Controllers: Validação de IDs e Respostas
+### 6. Status Codes e Retornos HTTP
 
-Você tem uma função `validateID` que retorna um erro se o ID não for numérico. Isso é ótimo!
+Notei que em alguns métodos de atualização (PUT e PATCH), você retorna o status 200 com dados atualizados, mas a especificação espera 204 NO CONTENT para atualizações completas ou parciais sem corpo de resposta.
 
-Porém, na função `getAgenteByID`, você faz:
-
-```js
-if(result.data && result.data.length > 0){
-    res.status(result.status).json(result);
-}else{
-    res.status(result.status).json(result);
-}
-```
-
-Esse if é redundante, pois o resultado é retornado da mesma forma em ambos os casos. Você pode simplificar para:
+Por exemplo, no seu controller `updateAgenteById`:
 
 ```js
 res.status(result.status).json(result);
 ```
 
-Além disso, garanta que os status e mensagens estejam coerentes, principalmente para retornos 404.
-
----
-
-## 7. Repositories de Casos: Pequenos Erros de Digitação
-
-No método `updateCaseById`:
+Se o `result.status` for 200 e você enviar dados, está correto, mas se quiser seguir estritamente o padrão REST, para PUT e PATCH você pode retornar 204 sem corpo:
 
 ```js
-if(!updateCaseById.length){
-    createError(400, `Não foi possível realizar a atualização do caso com o ID informado.`)
-}
+res.status(204).send();
 ```
 
-Aqui você está verificando `updateCaseById.length` (que é a função) em vez de `updatedCase.length` (a variável que recebeu o resultado). Isso fará com que a condição nunca funcione como esperado.
+Isso também depende do que você deseja expor, mas é importante alinhar com a documentação da API.
 
-### Como corrigir:
+---
+
+### 7. Pequenos Ajustes para Melhorar a Robustez
+
+- Nos seus métodos de inserção (`insertAgent`, `insertCase`), você insere o objeto recebido, mas não retorna o ID gerado pelo banco. Seria interessante usar `.returning('id')` para ter certeza do que foi inserido e retornar isso ao cliente.
+
+- No arquivo `casosRepository.js`, na função `patchCaseByID`, no catch você retorna:
 
 ```js
-if(!updatedCase.length){
-    return createError(400, `Não foi possível realizar a atualização do caso com o ID informado.`);
-}
+return (400, `Erro ao atualizar caso.`)
 ```
 
-Além disso, lembre-se de `return` o erro para o controller.
-
----
-
-## 8. Resumo dos Pontos Críticos para Corrigir 🔧
-
-- Ajustar o `docker-compose.yml` para que o healthcheck use as mesmas credenciais do `.env` e `knexfile.js`.
-- Corrigir a migration removendo a repetição de `.onDelete('CASCADE')` na tabela `casos`.
-- Garantir que os métodos do repository retornem os erros criados com `createError()` para que os controllers possam enviar as respostas corretas.
-- Corrigir erros de digitação como a verificação do resultado em `updateCaseById`.
-- Remover o arquivo `.env` do repositório público (adicione ao `.gitignore`).
-- Simplificar e garantir coerência nas respostas dos controllers.
-
----
-
-## 9. Recursos para Estudo 📚
-
-Para te ajudar a entender melhor esses pontos, recomendo:
-
-- **Configuração de Banco de Dados com Docker e Knex:**  
-  https://knexjs.org/guide/migrations.html  
-  https://knexjs.org/guide/query-builder.html  
-  http://googleusercontent.com/youtube.com/docker-postgresql-node
-
-- **Validação de Dados e Tratamento de Erros na API:**  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
-  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
-
-- **Boas práticas na organização do projeto e arquitetura MVC:**  
-  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH
-
----
-
-## 10. Exemplo de Correção na Migration
+Isso não está correto, pois não retorna um objeto de erro, nem um status HTTP. O correto seria:
 
 ```js
-await knex.schema.createTable('casos', (table) => {
-  table.increments('id').primary();
-  table.string('titulo').notNullable();
-  table.text('descricao').notNullable();
-  table.enu('status', ['aberto', 'solucionado'])
-      .notNullable()
-      .defaultTo('aberto');
-  table.integer('agente_id')
-      .notNullable()
-      .references('id')
-      .inTable('agentes')
-      .onDelete('CASCADE'); // Apenas uma chamada onDelete
-  table.index(['agente_id']);
-});
+return createError(400, `Erro ao atualizar caso.`);
 ```
 
 ---
 
-## 11. Exemplo de retorno correto de erro no repository
+## Recursos para você aprofundar e corrigir os pontos acima
 
-```js
-async function findAllAgents() {
-    try {
-        const agentes = await db.select().from('agentes');
-
-        if (!agentes.length) {
-            return createError(404, 'Não foram encontrados agentes na base de dados.');
-        }
-
-        return {
-            status: 200,
-            data: agentes,
-            msg: "Lista de agentes obtida com sucesso",
-        };
-    } catch (e) {
-        return createError(400, 'Erro ao realizar a consulta na base de dados.');
-    }
-}
-```
+- [Configuração de Banco de Dados com Docker e Knex](http://googleusercontent.com/youtube.com/docker-postgresql-node)  
+- [Documentação oficial do Knex sobre migrations](https://knexjs.org/guide/migrations.html)  
+- [Guia do Knex Query Builder](https://knexjs.org/guide/query-builder.html)  
+- [Vídeo sobre validação de dados em APIs Node.js](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)  
+- [HTTP Status Codes – 400 Bad Request](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400)  
+- [HTTP Status Codes – 404 Not Found](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404)  
+- [Arquitetura MVC em Node.js](https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH)  
 
 ---
 
-# Resumo Rápido dos Pontos-Chave para Melhorar 🚦
+## Resumo Rápido dos Principais Pontos para Focar 🔑
 
-- ⚠️ Ajuste o healthcheck do seu container Docker para usar as mesmas credenciais do `.env` e do `knexfile.js`.
-- ⚠️ Corrija a migration removendo a duplicidade do `.onDelete('CASCADE')`.
-- ⚠️ Sempre **retorne** os erros criados com `createError` nos repositories para que os controllers possam enviar a resposta correta.
-- ⚠️ Corrija pequenos erros de digitação, como na verificação do resultado em `updateCaseById`.
-- ⚠️ Remova o arquivo `.env` do repositório público e use `.gitignore`.
-- ✅ Continue mantendo a estrutura modular e as validações, isso está muito bem feito!
+- ✅ **Confirme que seu `.env` está correto e que o container do PostgreSQL está rodando e acessível.**  
+- ✅ **Execute as migrations e seeds na ordem correta para garantir que as tabelas e dados existam.**  
+- ✅ **Ajuste os métodos dos repositories para retornar objetos únicos (não arrays) em buscas por ID.**  
+- ✅ **Melhore a validação de IDs para aceitar somente números inteiros positivos.**  
+- ✅ **Corrija o retorno de erros no catch do `patchCaseByID` para usar `createError`.**  
+- ✅ **Considere retornar status 204 para métodos PUT e PATCH conforme padrão REST.**  
+- ✅ **Revise mensagens de erro para refletirem corretamente o contexto (ex: agente não encontrado vs. casos não encontrados).**
 
 ---
 
-Rodrigo, você está no caminho certo! Grandes projetos sempre começam com pequenos ajustes. Corrigindo esses pontos, sua API vai funcionar perfeitamente com o banco de dados e terá uma base sólida para crescer. Continue firme, estude os recursos que indiquei e conte comigo para o que precisar! 🚀💪
+Rodrigo, você está no caminho certo! A migração para banco relacional é um desafio e tanto, mas com esses ajustes seu projeto vai ganhar muito em qualidade e confiabilidade. Continue explorando, testando e aprimorando. Estou aqui torcendo pelo seu sucesso! 🚀🔥
 
-Abraços do seu Code Buddy! 🤖❤️
+Qualquer dúvida, me chama que a gente resolve junto! 😉
+
+Abraço forte!  
+Seu Code Buddy 🤖❤️
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
