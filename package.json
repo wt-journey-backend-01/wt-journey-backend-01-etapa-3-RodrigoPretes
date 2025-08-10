@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "db:reset": "npx knex migrate:rollback --all --env development && npx knex migrate:latest --env development && npx knex seed:run --env development"
+    "db:reset": "npx knex migrate:rollback --all --env development && npx knex migrate:latest --env development && npx knex seed:run --specific=agentes.js && npx knex seed:run --specific=casos.js --env development"
   },
   "repository": {
     "type": "git",

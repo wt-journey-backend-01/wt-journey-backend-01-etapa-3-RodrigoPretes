@@ -31,7 +31,7 @@ async function getAgentByID(id) {
         
         return {
             status: 200,
-            data: agente,
+            data: agente[0],
             msg: "Agente encontrado com sucesso",
         };
     }catch(e){
@@ -128,9 +128,7 @@ async function updateAgentById(agentID, agentToBeUpdated) {
         }
 
         return {
-            status: 204, 
-            data: null,
-            msg: "Agente atualizado com sucesso!"
+            status: 204
         }
 
     }catch(e){
@@ -157,9 +155,7 @@ async function patchAgentByID(agentID, req) {
         }
 
         return {
-            status: 204, 
-            data: null,
-            msg: "Agente atualizado com sucesso!"
+            status: 204
         }
 
     }catch(e){
