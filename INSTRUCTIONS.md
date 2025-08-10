@@ -44,8 +44,7 @@ NODE_ENV=development
 -   Execute o comando:
 
     ```bash
-    npx knex seed:run --specific=agentes.js
-    npx knex seed:run --specific=casos.js
+    npx knex seed:run --specific=agentes.js && npx knex seed:run --specific=casos.js
     ```
 
 -   Após a execução, o banco estará populado.

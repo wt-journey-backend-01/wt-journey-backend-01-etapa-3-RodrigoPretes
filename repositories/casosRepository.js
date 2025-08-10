@@ -70,7 +70,7 @@ async function getCaseByID(id) {
 
         return {
                 status: 200,
-                data: caseByID,
+                data: caseByID[0],
                 msg: "Caso encontrado com sucesso"
             };
     }catch(e){
@@ -109,9 +109,7 @@ async function updateCaseById(caseID, caseToBeUpdated){
         }
 
         return {
-            status: 204,
-            data: null,
-            msg: "Caso atualizado com sucesso."
+            status: 204
         }
 
     }catch(e){
@@ -139,9 +137,7 @@ async function patchCaseByID(caseID, caseToBePatched){
         }
 
         return {
-            status: 204, 
-            data: null,
-            msg: "Caso atualizado com sucesso!"
+            status: 204
         }
 
     }catch(e){
