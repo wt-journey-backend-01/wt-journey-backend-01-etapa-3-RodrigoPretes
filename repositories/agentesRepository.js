@@ -1,155 +1,203 @@
 const { v4: uuidv4 } = require('uuid');
 const { createError } = require('../utils/errorHandler');
 const { isValidDate } = require('../utils/formatDate');
+const db = require('../db/db');
 
-const caseModel = (data) => {
-  return {
-    id: uuidv4(),
-    nome: data.nome,
-    dataDeIncorporacao: isValidDate(data.dataDeIncorporacao) ? data.dataDeIncorporacao : null,
-    cargo: data.cargo
-  };
-};
+async function findAllAgents() {
+    try{
+        const agentes = await db.select().from('agentes');
 
-const agentes = [
-    {
-        id: "401bccf5-cf9e-489d-8412-446cd169a0f1",
-        nome: "Rommel Carneiro",
-        dataDeIncorporacao: "1992-10-04",
-        cargo: "delegado"
+        if(!agentes.length){
+            createError(404, 'Não foram encontrados agentes na base de dados.');
+        }
+    
+        return {
+            status: 200,
+            data: agentes,
+            msg: "Lista de agentes obtida com sucesso",
+        };
+    }catch(e){
+        return createError(400, 'Erro ao realizar a consulta na base de dados.');
     }
-];
-
-function findAllAgents() {
-    return {
-        data: agentes,
-        msg: "Lista de agentes obtida com sucesso",
-        status: 200
-    };
 }
 
-function getAgentByID(id) { 
-    const agent = agentes.find(a => a.id === id);
-    return agent
-        ? { data: agent, msg: "Agente encontrado com sucesso", status: 200 }
-        : createError(404, "ID de agente não encontrado");
+async function getAgentByID(id) {
+    try{
+        const agente = await db.select().from('agentes').where('agentes.id', id);
+
+        if(!agente.length){ 
+            return createError(404, `Não foi encontrado nenhum agente com o id: ${id}, na nossa base de dados.`);
+        };
+        
+        return {
+            status: 200,
+            data: agente,
+            msg: "Agente encontrado com sucesso",
+        };
+    }catch(e){
+        return createError(400, `Erro ao realizar a consulta do agente de id: ${id}.`);
+    }
 }
 
-function findByCargo(cargo) {
-    const result = agentes.filter(agent => agent.cargo.toLowerCase() === cargo.toLowerCase());
-    return {
-        status: 200,
-        data: result
-    };
+async function findAllAgentCases(agentID) {
+    try{
+        const agente = await db('casos as c')
+                            .join('agentes as a', 'a.id', 'c.agente_id')
+                            .select('c.*') 
+                            .where('c.agente_id', agentID);
+
+        if(!agente.length){ 
+            return createError(404, `Não foi encontrado nenhum agente com o id: ${agentID}, na nossa base de dados.`);
+        };
+        
+        return {
+            status: 200,
+            data: agente,
+            msg: "Agente encontrado com sucesso",
+        };
+    }catch(e){
+        return createError(400, `Erro ao realizar a consulta do agente de id: ${agentID}.`);
+    }
 }
 
-function sortByIncorporation(sortParam) {
-  const asc = sortParam === 'dataDeIncorporacao';
-  const desc = sortParam === '-dataDeIncorporacao';
+async function findByCargo(cargo) {
+    try{
+        const agente = await db.select('*').from('agentes').where('agentes.cargo', cargo);
 
-  if (!asc && !desc) {
-    return createError(400, "Parâmetro sort inválido. Use 'dataDeIncorporacao' ou '-dataDeIncorporacao'.");
-  }
+        if(!agente.length){
+            return createError(404, `Não foi encontrado nenhum agente com o cargo ${cargo}, na nossa base de dados.`);
+        };
 
-  const sorted = [...agentes].sort((a, b) => {
-    const da = new Date(a.dataDeIncorporacao);
-    const db = new Date(b.dataDeIncorporacao);
-
-    const aInvalid = isNaN(da);
-    const bInvalid = isNaN(db);
-
-    if (aInvalid && bInvalid) return 0;
-    if (aInvalid) return 1;
-    if (bInvalid) return -1;
-
-    return asc ? (da - db) : (db - da);
-  });
-
-  return {
-    status: 200,
-    data: sorted,
-    msg: asc
-      ? "Agentes ordenados por dataDeIncorporacao (ascendente: mais antigo primeiro)."
-      : "Agentes ordenados por dataDeIncorporacao (descendente: mais recente primeiro)."
-  };
+        return {
+            status: 200,
+            data: agente, 
+            msg: 'Agente(s) encontrado(s) com sucesso.'
+        };
+    }catch(e){
+        return createError(400, `Erro ao realizar a consulta do cargo: ${cargo}`);
+    }
 }
 
-function insertAgent(req) {
+async function sortByIncorporation(sortParam) {
+    try{
+        const sorted = await db.select('*').from('agentes').orderBy("dataDeIncorporacao", sortParam === "dataDeIncorporacao" ? 'asc' : 'desc');
 
-    if(req.dataDeIncorporacao && !isValidDate(req.dataDeIncorporacao)) {
-        return createError(400, "Data de incorporação inválida");
-    };
-
-    const novoAgente = caseModel(req);
-
-
-    if (!novoAgente.nome || !novoAgente.dataDeIncorporacao || !novoAgente.cargo) {
-        return createError(400, "Campos obrigatórios faltando");
+        if(!sorted.length){
+            createError(404, "Não foram encontrados nenhum agente, não sendo possível fazer sua ordenação.");
+        }
+        
+        return {
+            status: 200,
+            data: sorted,
+            msg: "Busca de agentes ordenados por dataDeIncorporacao realizada com sucesso."
+        };
+    }catch(e){
+        return createError(400, "Erro ao realizar a ordenação dos agentes.");
     }
-
-    agentes.push(novoAgente);
-    return {
-        data: novoAgente,
-        msg: "Agente inserido com sucesso",
-        status: 201
-    };
 }
 
-function updateAgentById(agentID, req) {
-    const index = agentes.findIndex(a => a.id === agentID);
-    if (index === -1) {
-        return createError(404, "ID de agente não encontrado");
+async function insertAgent(newAgent) {
+    try{
+        await db.insert(newAgent).into('agentes');
+        
+        return {
+            status: 201,
+            data: [newAgent],
+            msg: "Agente inserido com sucesso",
+        };
+    }catch(e){
+        return createError(400, 'Erro ao realizar a inserção de um novo agente.')
     }
-
-    if (!isValidDate(req.dataDeIncorporacao)) {
-    return createError(400, "Data de incorporação inválida");
-    }
-
-    agentes[index] = {
-    id: agentes[index].id,
-    nome: req.nome,
-    dataDeIncorporacao: req.dataDeIncorporacao,
-    cargo: req.cargo
-    };
-
-    return {
-        status: 204
-    };
 }
 
-function patchAgentByID(agentID, req) {
-    const index = agentes.findIndex(a => a.id === agentID);
-    if (index === -1) {
-        return createError(404, "ID de agente não encontrado");
+async function updateAgentById(agentID, agentToBeUpdated) {
+    try{
+        const hasAgentWithID = await db.select('*').from('agentes').where('agentes.id', agentID);
+
+        if(!hasAgentWithID.length){
+            return createError(404, `Não existe um agente com esse ID ${agentID}`);
+        }
+
+        let updatedAgent = await db('agentes')
+                                .where('agentes.id', agentID)
+                                .update(agentToBeUpdated)
+                                .returning(['id', 'nome', 'dataDeIncorporacao', 'cargo']);
+
+        if(!updatedAgent.length){
+            createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
+        }
+
+        return {
+            status: 200, 
+            data: updatedAgent,
+            msg: "Agente atualizado com sucesso!"
+        }
+
+    }catch(e){
+        createError(400, `Erro ao atualizar agente.`)
     }
-
-    if(req.id && req.id !== agentID) {
-        return createError(400, "ID não pode ser sobrescrito");
-    }
-
-    agentes[index] = { ...agentes[index], ...req };
-
-    return {
-        status: 204
-    };
 }
 
-function deleteAgentById(agentID) {
-    const index = agentes.findIndex(a => a.id === agentID);
-    if (index === -1) {
-        return createError(404, "ID de agente não encontrado");
-    }
+async function patchAgentByID(agentID, req) {
+    try{
 
-    agentes.splice(index, 1);
-    return {
-        msg: "Agente deletado com sucesso",
-        status: 200
-    };
+        const hasAgentWithID = await db.select('*').from('agentes').where('agentes.id', agentID);
+        
+        if(!hasAgentWithID.length){
+            return createError(404, `Não existe um agente com esse ID: ${agentID}`);
+        }
+    
+        let patchedAgent = await db('agentes')
+            .where('agentes.id', agentID)
+            .update(req)
+            .returning(['id', 'nome', 'dataDeIncorporacao', 'cargo']);
+        
+        if(!patchedAgent.length){
+            createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
+        }
+
+        return {
+            status: 200, 
+            data: patchedAgent,
+            msg: "Agente atualizado com sucesso!"
+        }
+
+    }catch(e){
+        createError(400, `Erro ao atualizar agente.`)
+    }
+}
+
+async function deleteAgentById(agentID) {
+    try{
+        const hasAgentWithID = await db.select('*').from('agentes').where('agentes.id', agentID);
+        
+        if(!hasAgentWithID.length){
+            return createError(404, `Não existe um agente com esse ID ${agentID}`);
+        }
+
+        const deletedAgent = await db('agentes')
+                            .where('agentes.id', agentID)
+                            .del();
+
+        if(deletedAgent === 0){
+            return createError(400, `Não foi possível realizar a exclusão do agente com ID: ${agentID}`);
+        }
+
+        return {
+            status: 200, 
+            data: null,
+            msg: "Agente excluído com sucesso!"
+        };
+    }
+    catch(e){
+        createError(400, `Erro ao excluir agente.`);
+    }
 }
 
 module.exports = {
     findAllAgents,
     findByCargo,
+    findAllAgentCases,
     sortByIncorporation,
     getAgentByID,
     insertAgent,

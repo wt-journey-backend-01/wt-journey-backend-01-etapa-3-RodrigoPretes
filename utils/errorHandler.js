@@ -1,8 +1,8 @@
-function createError(status, message, error) {
+function createError(status, message) {
     return {
-        error: error ? error : true,
-        message: message,
-        status
+        status,
+        data: [],
+        msg: message
     };
 }
 
