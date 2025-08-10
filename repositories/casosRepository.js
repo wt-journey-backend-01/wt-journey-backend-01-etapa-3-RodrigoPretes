@@ -7,7 +7,7 @@ async function findAllCases() {
         const cases = await db.select('*').from('casos')
         
         if(!cases.length){
-            createError(404, `Não foram encontrados casos na base de dados.`)
+            return createError(404, `Não foram encontrados casos na base de dados.`)
         }
 
 
@@ -17,7 +17,7 @@ async function findAllCases() {
             msg: "Lista de casos obtida com sucesso"
         }
     }catch(e){
-        createError(400, `Erro ao realizar a busca dos casos na base de dados.`)
+        return createError(400, `Erro ao realizar a busca dos casos na base de dados.`)
     }
 }
 
@@ -87,7 +87,7 @@ async function insertCase(newCase){
             msg: "Caso inserido com sucesso"
         };
     }catch(e){
-        createError(400, `Ocorreu um erro ao realizar a inserção de um novo caso.`)
+        return createError(400, `Ocorreu um erro ao realizar a inserção de um novo caso.`)
     }
 }
 
@@ -104,7 +104,7 @@ async function updateCaseById(caseID, caseToBeUpdated){
                                 .update(caseToBeUpdated)
                                 .returning('*');
 
-        if(!updateCaseById.length){
+        if(!updatedCase.length){
             return createError(400, `Não foi possível realizar a atualização do caso com o ID informado.`)
         }
 
@@ -135,7 +135,7 @@ async function patchCaseByID(caseID, caseToBePatched){
             .returning('*');
         
         if(!patchedAgent.length){
-            createError(400, `Não foi possível realizar a atualização do caso de ID: ${caseID}`);
+            return createError(400, `Não foi possível realizar a atualização do caso de ID: ${caseID}`);
         }
 
         return {
@@ -145,7 +145,7 @@ async function patchCaseByID(caseID, caseToBePatched){
         }
 
     }catch(e){
-        createError(400, `Erro ao atualizar caso.`)
+        return (400, `Erro ao atualizar caso.`)
     }
 }
 
@@ -172,7 +172,7 @@ async function deleteCaseById(caseID){
         };
     }
     catch(e){
-        createError(400, `Erro ao excluir caso.`);
+        return createError(400, `Erro ao excluir caso.`);
     }
 }
 

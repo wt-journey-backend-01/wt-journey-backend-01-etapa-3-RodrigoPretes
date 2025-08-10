@@ -85,11 +85,7 @@ async function getAgenteByID(req, res) {
         return res.status(invalid.status).json(invalid);
     } 
     const result = await agentesRepository.getAgentByID(req.params.id);
-    if(result.data && result.data.length > 0){
-        res.status(result.status).json(result);
-    }else{
-        res.status(result.status).json(result);
-    }
+    res.status(result.status).json(result);
 }
 
 async function getAllAgentCases(req, res) {
