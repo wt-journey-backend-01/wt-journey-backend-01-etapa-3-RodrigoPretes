@@ -98,11 +98,14 @@ async function sortByIncorporation(sortParam) {
 
 async function insertAgent(newAgent) {
     try{
-        const agentInsertedID = await db.insert(newAgent).into('agentes').returning('id');
+        const [agentInsertedID] = await db.insert(newAgent).into('agentes').returning("*");
         
         return {
             status: 201,
-            data: agentInsertedID[0],
+            data: {
+                ...agentInsertedID,
+                dataDeIncorporacao: new Date(agentInsertedID.dataDeIncorporacao).toISOString().split('T')[0]
+            },
             msg: "Agente inserido com sucesso",
         };
     }catch(e){
