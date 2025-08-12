@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres:
     container_name: postgres-db
     image: postgres:17
     restart: always
