@@ -76,10 +76,10 @@ async function getAllCasos(req, res) {
 	if (status) {
 		if (status !== "aberto" && status !== "solucionado") {
 			const error = createError(400, "Status inválido, deve ser 'aberto' ou 'solucionado'");
-			return res.status(error.status).json(error);
+			return res.status(error.status).json(error.data);
 		}
 		const result = await casosRepository.findByStatus(status);
-		return res.status(result.status).json(result);
+		return res.status(result.status).json(result.data);
 	}
 
 	if (agente_id) {
@@ -88,7 +88,7 @@ async function getAllCasos(req, res) {
 			return res.status(validID.status).json(validID);
 		}
 		const result = await casosRepository.findByAgent(agente_id);
-		return res.status(result.status).json(result);
+		return res.status(result.status).json(result.data);
 	}
 
 	const casos = await casosRepository.findAllCases();
@@ -109,12 +109,12 @@ async function insertCase(req, res) {
 	const validCaseData = await buildCase(req.body, 'post');
 	if (!validCaseData.valid) {
 		const error = createError(400, validCaseData.message);
-		return res.status(error.status).json(error);
+		return res.status(error.status).json(error.data);
 	}
 	const existingAgent = await agentesRepository.getAgentByID(req.body.agente_id);
 	if (existingAgent.status !== 200) {
 		const error = createError(existingAgent.status, existingAgent.msg);
-		return res.status(error.status).json(error);
+		return res.status(error.status).json(error.data);
 	}
 	const insertedCase = await casosRepository.insertCase(validCaseData.payload);
 	return res.status(insertedCase.status).json(insertedCase);
@@ -128,7 +128,7 @@ async function updateCaseById(req, res){
 	const validCaseData = await buildCase(req.body, 'put');
 	if (!validCaseData.valid) {
 		const error = createError(400, validCaseData.message);
-		return res.status(error.status).json(error);
+		return res.status(error.status).json(error.data);
 	}
 	const updatedCase = await casosRepository.updateCaseById(req.params.id, validCaseData.payload);
 	return res.status(updatedCase.status).send();
@@ -142,7 +142,7 @@ async function patchCaseByID(req, res) {
 	const validCaseData = await buildCase(req.body, 'patch');
 	if (!validCaseData.valid) {
 		const error = createError(400, validCaseData.message);
-		return res.status(error.status).json(error);
+		return res.status(error.status).json(error.data);
 	}
 	const patchedCase = await casosRepository.patchCaseByID(req.params.id, validCaseData.payload);
 	return res.status(patchedCase.status).send();
@@ -154,7 +154,7 @@ async function deleteCaseById(req, res) {
 		return res.status(invalid.status).json(invalid);
 	}
 	const result = await casosRepository.deleteCaseById(req.params.id);
-	res.status(result.status).json(result);
+	res.status(result.status).json(result.data);
 }
 
 
