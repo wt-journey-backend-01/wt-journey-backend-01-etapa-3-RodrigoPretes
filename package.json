@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "db:reset": "docker compose down -v && docker compose up -d && sleep 4 && npx knex migrate:latest && npx knex seed:run --specific=agentes.js && npx knex seed:run --specific=casos.js"
+    "db:reset": "npx knex migrate:latest && npx knex seed:run --specific=agentes.js && npx knex seed:run --specific=casos.js"
   },
   "repository": {
     "type": "git",

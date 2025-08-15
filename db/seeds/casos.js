@@ -3,8 +3,8 @@
  * @returns { Promise<void> } 
  */
 exports.seed = async function(knex) {
-  const agentes = await knex('agentes').select('id').orderBy('id', 'asc');
   await knex('casos').del();
+  const agentes = await knex("agentes").select("id", "nome");
   await knex('casos').insert([
     {
       titulo: "Roubo ao mercado",
