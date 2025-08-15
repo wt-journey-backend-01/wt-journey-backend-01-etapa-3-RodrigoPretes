@@ -80,10 +80,12 @@ async function getCaseByID(id) {
 
 async function insertCase(newCase){
     try{    
-        const caseInsertedID = await db.insert(newCase).into('casos').returning('id');
+        const [caseInsertedID] = await db.insert(newCase).into('casos').returning('*');
         return {
             status: 201,
-            data: caseInsertedID[0],
+            data: {
+                ...caseInsertedID
+            },
             msg: "Caso inserido com sucesso"
         };
     }catch(e){
@@ -108,8 +110,12 @@ async function updateCaseById(caseID, caseToBeUpdated){
             return createError(400, `Não foi possível realizar a atualização do caso com o ID informado.`)
         }
 
+        const updatedAgentObject = Object.assign({}, updatedCase[0]);
+
         return {
-            status: 204
+            status: 200,
+            data: {...updatedAgentObject},
+            msg: `Caso atualizado com sucesso.`
         }
 
     }catch(e){
@@ -136,8 +142,12 @@ async function patchCaseByID(caseID, caseToBePatched){
             return createError(400, `Não foi possível realizar a atualização do caso de ID: ${caseID}`);
         }
 
+        const patchAgentObject = Object.assign({}, patchedAgent[0]);
+
         return {
-            status: 204
+            status: 200,
+            data: patchAgentObject,
+            msg: `Caso atualizado parcialmente com sucesso.`
         }
 
     }catch(e){
@@ -162,7 +172,7 @@ async function deleteCaseById(caseID){
         }
 
         return {
-            status: 200, 
+            status: 204, 
             data: null,
             msg: "Caso excluído com sucesso!"
         };

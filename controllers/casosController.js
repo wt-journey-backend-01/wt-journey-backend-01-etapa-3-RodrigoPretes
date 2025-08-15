@@ -23,6 +23,10 @@ async function buildCase(data, method){
         }
     }
 
+	if(data.id){
+        return { valid: false, message: `ID não pode ser sobrescrito.`}
+    }
+
     for (const k of allowed) {
         if (Object.prototype.hasOwnProperty.call(data, k) && data[k] !== undefined) {
             payload[k] = data[k];
@@ -91,8 +95,8 @@ async function getAllCasos(req, res) {
 		return res.status(result.status).json(result.data);
 	}
 
-	const casos = await casosRepository.findAllCases();
-	res.status(casos.status).json(casos);
+	const result = await casosRepository.findAllCases();
+	res.status(result.status).json(result.data);
 }
 
 async function getCaseByID(req, res) {
@@ -101,8 +105,8 @@ async function getCaseByID(req, res) {
 		return res.status(valid.status).json(valid);
 	} 
 	const caseID = req.params.id;
-	const caso = await casosRepository.getCaseByID(caseID);
-	res.status(caso.status).json(caso);
+	const result = await casosRepository.getCaseByID(caseID);
+	res.status(result.status).json(result.data);
 }
 
 async function insertCase(req, res) {
@@ -116,8 +120,8 @@ async function insertCase(req, res) {
 		const error = createError(existingAgent.status, existingAgent.msg);
 		return res.status(error.status).json(error.data);
 	}
-	const insertedCase = await casosRepository.insertCase(validCaseData.payload);
-	return res.status(insertedCase.status).json(insertedCase);
+	const result = await casosRepository.insertCase(validCaseData.payload);
+	return res.status(result.status).json(result.data);
 }
 
 async function updateCaseById(req, res){
@@ -130,8 +134,8 @@ async function updateCaseById(req, res){
 		const error = createError(400, validCaseData.message);
 		return res.status(error.status).json(error.data);
 	}
-	const updatedCase = await casosRepository.updateCaseById(req.params.id, validCaseData.payload);
-	return res.status(updatedCase.status).send();
+	const result = await casosRepository.updateCaseById(req.params.id, validCaseData.payload);
+	return res.status(result.status).json(result.data);
 }
 
 async function patchCaseByID(req, res) {
@@ -144,8 +148,8 @@ async function patchCaseByID(req, res) {
 		const error = createError(400, validCaseData.message);
 		return res.status(error.status).json(error.data);
 	}
-	const patchedCase = await casosRepository.patchCaseByID(req.params.id, validCaseData.payload);
-	return res.status(patchedCase.status).send();
+	const result = await casosRepository.patchCaseByID(req.params.id, validCaseData.payload);
+	return res.status(result.status).json(result.data);
 }
 
 async function deleteCaseById(req, res) {
@@ -154,7 +158,7 @@ async function deleteCaseById(req, res) {
 		return res.status(invalid.status).json(invalid);
 	}
 	const result = await casosRepository.deleteCaseById(req.params.id);
-	res.status(result.status).json(result.data);
+	res.status(result.status).send();
 }
 
 

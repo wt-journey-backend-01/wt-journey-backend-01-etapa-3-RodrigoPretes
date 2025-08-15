@@ -23,6 +23,10 @@ function buildAgent(data, method) {
         }
     }
 
+    if(data.id){
+        return { valid: false, message: `ID não pode ser sobrescrito.`}
+    }
+
     for (const k of allowed) {
         if (Object.prototype.hasOwnProperty.call(data, k) && data[k] !== undefined) {
             payload[k] = data[k];
@@ -123,7 +127,7 @@ async function updateAgenteById(req, res) {
         return res.status(error.status).json(error.data);
     }
     const result = await agentesRepository.updateAgentById(req.params.id, buildedAgent.payload);
-    res.status(result.status).send();
+    res.status(result.status).json(result.data);
 }
 
 async function patchAgenteByID(req, res) {
@@ -137,7 +141,7 @@ async function patchAgenteByID(req, res) {
         return res.status(error.status).json(error.data);
     }
     const result = await agentesRepository.patchAgentByID(req.params.id, validAgentPatch.payload);
-    res.status(result.status).send();
+    res.status(result.status).json(result.data);
 }
 
 async function deleteAgenteById(req, res) {
@@ -146,7 +150,7 @@ async function deleteAgenteById(req, res) {
         return res.status(invalid.status).json(invalid);
     }
     const result = await agentesRepository.deleteAgentById(req.params.id);
-    res.status(result.status).json(result.data);
+    res.status(result.status).send();
 }
 
 module.exports = {

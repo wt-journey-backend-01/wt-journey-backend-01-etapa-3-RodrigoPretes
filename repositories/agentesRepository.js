@@ -130,8 +130,15 @@ async function updateAgentById(agentID, agentToBeUpdated) {
             return createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
         }
 
+        const updatedAgentObject = Object.assign({}, updatedAgent[0]);
+
         return {
-            status: 204
+            status: 200,
+            data:{
+                ...updatedAgentObject,
+                dataDeIncorporacao: new Date(updatedAgentObject.dataDeIncorporacao).toISOString().split('T')[0]
+            },
+            msg: `Agente de ID ${agentID} atualizado com sucesso.`
         }
 
     }catch(e){
@@ -157,8 +164,15 @@ async function patchAgentByID(agentID, req) {
            return createError(400, `Não foi possível realizar a atualização do agente de ID: ${agentID}`);
         }
 
+        const patchedAgentObject = Object.assign({}, patchedAgent[0]);
+
         return {
-            status: 204
+            status: 200,
+            data:{
+                ...patchedAgentObject,
+                dataDeIncorporacao: new Date(patchedAgentObject.dataDeIncorporacao).toISOString().split('T')[0]
+            },
+            msg: `Agente parcialmente atualizado com sucesso.`
         }
 
     }catch(e){
@@ -183,7 +197,7 @@ async function deleteAgentById(agentID) {
         }
 
         return {
-            status: 200, 
+            status: 204, 
             data: null,
             msg: "Agente excluído com sucesso!"
         };
