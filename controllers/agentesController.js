@@ -109,7 +109,7 @@ async function insertAgente(req, res) {
         return res.status(error.status).json(error);
     }
     const result = await agentesRepository.insertAgent(buildedAgent.payload);
-    res.status(result.status).json(result);
+    res.status(result.status).json(result.data);
 }
 
 async function updateAgenteById(req, res) {
